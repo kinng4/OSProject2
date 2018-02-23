@@ -115,9 +115,9 @@ void fifo(char *fileName, int numberFrames, int debug)
           //if cache was full
           if(cacheFull == 1)
           {
-            if(cache[i].dirty = 1)
+            if(cache[0].dirty == 1)
             {
-               pageTable[cache[i].vpn].vpn = cache[i].vpn; //save address to the disk
+               pageTable[cache[0].vpn].vpn = cache[0].vpn; //save address to the disk
                if(debug==1)
                   printf("Writing to disk\n");
                writes++;
@@ -243,33 +243,36 @@ void lru(char *fileName, int numberFrames, int debug)
                if(i==(numberFrames-1))
                   cacheFull = 1;  
             }
-          }
             
-          //if cache was full
-          if(cacheFull == 1)
-          {
-            //calculate the one with the most lru time
-            for(i=0; i < numberFrames; i++)
+            //if cache was full
+            if(cacheFull == 1)
             {
-               if(cache[i].lru > maxTime)
-               {
-                  maxTime = cache[i].lru;
-                  pageReplaced = i;
-               }
-            } 
+              //calculate the one with the most lru time
+              for(i=0; i < numberFrames; i++)
+              {
+                 if(cache[i].lru > maxTime)
+                 {
+                    maxTime = cache[i].lru;
+                    pageReplaced = i;
+                 }
+              } 
+            
+              if(cache[pageReplaced].dirty == 1)
+              {
+                pageTable[cache[pageReplaced].vpn].vpn = cache[pageReplaced].vpn; //save address to the disk
+                if(debug == 1)
+                 printf("Writing to disk\n");
+                writes++;
+              }
+            
+              cache[pageReplaced].vpn = pageNumber; //replace the page
+              cache[pageReplaced].lru = 0;          //reset the time to 0;
+              cache[pageReplaced].dirty = 0;        //reset dirty bit
+            
+              reads++; //increment read for reading from disk
           
-            if(cache[pageReplaced].dirty = 1)
-            {
-              pageTable[cache[pageReplaced].vpn].vpn = cache[pageReplaced].vpn; //save address to the disk
-              if(debug == 1)
-               printf("Writing to disk\n");
-              writes++;
             }
-          
-            cache[pageReplaced].vpn = pageNumber; //replace the page
-            cache[pageReplaced].lru = 0;          //reset the time to 0;
             
-            reads++; //increment read for reading from disk
           
           }
           
